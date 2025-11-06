@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>QueueCTL Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+      padding: 20px;
+    }
+    h1 {
+      color: #38bdf8;
+      margin-bottom: 20px;
+    }
+    .stats {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 10px;
+      padding: 20px;
+      width: 180px;
+      text-align: center;
+      box-shadow: 0 0 10px #0003;
+    }
+    .card h2 {
+      color: #38bdf8;
+      margin-bottom: 10px;
+    }
+    .workers {
+      margin-top: 30px;
+      width: 80%;
+      background: #1e293b;
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .worker {
+      border-bottom: 1px solid #475569;
+      padding: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>QueueCTL Dashboard</h1>
+  <div class="stats" id="stats"></div>
+
+  <div class="workers" id="workers">
+    <h2>Active Workers</h2>
+    <div id="workerList"></div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://tfeboqsjtpqeuqzzvesm.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRmZWJvcXNqdHBxZXVxenp2ZXNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0MDA0MDgsImV4cCI6MjA3Nzk3NjQwOH0.KSklIhL4XfQ3W86DbeodROt6pyGSAV4GTqD6RRscRqA";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function loadStats() {
+      const { data: jobs } = await supabase.from('jobs').select('state');
+      const stats = { pending: 0, processing: 0, completed: 0, failed: 0, dead: 0 };
+
+      if (jobs) {
+        jobs.forEach(j => {
+          if (stats[j.state] !== undefined) stats[j.state]++;
+        });
+      }
+
+      const total = jobs ? jobs.length : 0;
+
+      document.getElementById('stats').innerHTML = `
+        ${Object.keys(stats)
+          .map(
+            k => `
+            <div class="card">
+              <h2>${k.toUpperCase()}</h2>
+              <p>${stats[k]}</p>
+            </div>`
+          )
+          .join('')}
+        <div class="card">
+          <h2>TOTAL</h2>
+          <p>${total}</p>
+        </div>`;
+    }
+
+    async function loadWorkers() {
+      const { data: workers } = await supabase.from('workers').select('*');
+      const container = document.getElementById('workerList');
+
+      if (!workers || workers.length === 0) {
+        container.innerHTML = "<p>No active workers</p>";
+        return;
+      }
+
+      container.innerHTML = workers
+        .map(
+          w => `
+          <div class="worker">
+            <strong>${w.id}</strong> — ${w.status}<br/>
+            Jobs processed: ${w.jobs_processed}<br/>
+            Started: ${new Date(w.started_at).toLocaleString()}
+          </div>`
+        )
+        .join('');
+    }
+
+    loadStats();
+    loadWorkers();
+
+    // Listen for real-time changes
+    supabase
+      .channel('jobs-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs' }, loadStats)
+      .subscribe();
+
+    supabase
+      .channel('worker-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'workers' }, loadWorkers)
+      .subscribe();
+  </script>
+</body>
+</html>

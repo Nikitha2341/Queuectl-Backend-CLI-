@@ -1,4 +1,11 @@
 # QueueCTL - Background Job Queue System
+# A Dashboard was made for this
+<img width="1778" height="825" alt="image" src="https://github.com/user-attachments/assets/03d3a4ec-c475-48c2-84a0-5d58c9f41f96" />
+List of jobs in the terminal 
+<img width="1251" height="379" alt="image" src="https://github.com/user-attachments/assets/cd29990b-ef8b-4ef2-98e7-e1f678aaee28" />
+
+
+
 
 A production-grade, CLI-based background job queue system with worker processes, automatic retry with exponential backoff, and Dead Letter Queue (DLQ) support.
 

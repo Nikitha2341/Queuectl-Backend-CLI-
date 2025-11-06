@@ -295,6 +295,22 @@ node queuectl.js dlq list
 node queuectl.js dlq retry failing-job
 ```
 
+node queuectl.js list
+
+
+Example output:
+
+┌──────────────────────┬────────────────────────────┬──────────────┬────────────┬──────────────────────────────┬────────────┐
+│ Job ID               │ Command                   │ State        │ Attempts   │ Created At                   │ Output     │
+├──────────────────────┼────────────────────────────┼──────────────┼────────────┼──────────────────────────────┼────────────┤
+│ caf72eb2-87fe-41f…   │ echo "this is updated"     │  dead        │ 3/3        │ 6/11/2025, 7:12:02 PM        │ this ...   │
+│ 3552dd8a-c591-471…   │ echo "working module"      │  dead        │ 3/3        │ 6/11/2025, 7:06:18 PM        │ This ...   │
+│ db924603-3f95-431…   │ sleep chaitali             │  dead        │ 3/3        │ 6/11/2025, 4:56:32 PM        │ sleep ...  │
+│ echo Jyothi          │ echo Jyothi                │  completed   │ 0/3        │ 6/11/2025, 4:56:30 PM        │ Jyothi     │
+│ echo Vishnu          │ echo vishnu                │  completed   │ 0/3        │ 6/11/2025, 4:56:34 PM        │ vishnu     │
+└──────────────────────┴────────────────────────────┴──────────────┴────────────┴───────────────────────────-----------------
+
+
 ### Example 3: Multiple Workers
 
 ```bash
